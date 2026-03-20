@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+body {
+  background: radial-gradient(circle at top, #0f172a, #020617 70%);
+  color: white;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+}
