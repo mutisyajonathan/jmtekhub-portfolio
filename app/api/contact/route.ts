@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { supabaseServer } from "@/lib/supabase-server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -8,9 +10,34 @@ export async function POST(req: Request) {
   try {
     const { name, email, service, message } = await req.json();
 
-    const data = await resend.emails.send({
+    // ✅ Basic validation
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // ✅ 1. Store in Supabase
+    const { error: dbError } = await supabaseServer
+      .from("leads")
+      .insert([
+        {
+          name,
+          email,
+          service,
+          message,
+        },
+      ]);
+
+    if (dbError) {
+      console.error("DB Error:", dbError);
+    }
+
+    // ✅ 2. Send email to YOU
+    await resend.emails.send({
       from: "JM TekHub <onboarding@resend.dev>",
-      to: ["mutisyajonathan.ke@gmail.com"], // your email
+      to: ["mutisyajonathan.ke@gmail.com"],
       subject: `New Service Request: ${service}`,
       html: `
         <h2>New Client Request</h2>
@@ -21,8 +48,29 @@ export async function POST(req: Request) {
       `,
     });
 
-    return NextResponse.json({ success: true, data });
+    // ✅ 3. Send confirmation email to CLIENT
+    await resend.emails.send({
+      from: "JM TekHub <onboarding@resend.dev>",
+      to: [email],
+      subject: "We received your request - JM TekHub",
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>Thank you for reaching out to <strong>JM TekHub</strong>.</p>
+        <p>We have received your request for <b>${service}</b>.</p>
+        <p>Our team will get back to you shortly.</p>
+        <br/>
+        <p><strong>Your Message:</strong></p>
+        <p>${message}</p>
+      `,
+    });
+
+    return NextResponse.json({ success: true });
+
   } catch (error) {
-    return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 }
+    );
   }
 }
