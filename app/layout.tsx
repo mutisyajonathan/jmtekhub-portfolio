@@ -1,4 +1,5 @@
 import "./globals.css";
+import ParticleBackground from "../components/Particles";
 
 export const metadata = {
   title: "JM TekHub | Portfolio",
@@ -13,6 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-950 text-white">
+           <ParticleBackground />
         {children}
       </body>
     </html>
