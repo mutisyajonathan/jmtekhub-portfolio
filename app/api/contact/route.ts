@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+import { clientEmailTemplate } from "../../../lib/emailTemplate";
 
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -53,15 +54,11 @@ export async function POST(req: Request) {
       from: "JM TekHub <onboarding@resend.dev>",
       to: [email],
       subject: "We received your request - JM TekHub",
-      html: `
-        <h2>Hello ${name},</h2>
-        <p>Thank you for reaching out to <strong>JM TekHub</strong>.</p>
-        <p>We have received your request for <b>${service}</b>.</p>
-        <p>Our team will get back to you shortly.</p>
-        <br/>
-        <p><strong>Your Message:</strong></p>
-        <p>${message}</p>
-      `,
+      html: clientEmailTemplate({
+        name,
+        service,
+        message,
+      }),
     });
 
     return NextResponse.json({ success: true });
