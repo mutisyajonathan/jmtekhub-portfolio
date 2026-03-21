@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 import ParticleBackground from "../components/Particles";
 
 export const metadata = {
