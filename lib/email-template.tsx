@@ -1,3 +1,9 @@
+/**
+ * 
+ * @param param0 email template
+ * @returns 
+ */
+
 export function clientEmailTemplate({
   name,
   service,

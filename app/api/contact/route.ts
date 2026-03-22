@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { clientEmailTemplate } from "../../../lib/EmailTemplate";
+import { clientEmailTemplate } from "../../../lib/email-template";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseServer } from "../../../lib/supabase/supabase-server";

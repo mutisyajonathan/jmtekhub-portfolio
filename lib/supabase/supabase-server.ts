@@ -1,3 +1,7 @@
+/**
+ * supabase server
+ */
+
 import { createClient } from "@supabase/supabase-js";
 
 export const supabaseServer = createClient(
