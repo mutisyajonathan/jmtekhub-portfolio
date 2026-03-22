@@ -1,18 +1,18 @@
 export const dynamic = "force-dynamic";
-import { clientEmailTemplate } from "../../../lib/emailTemplate";
 
+import { clientEmailTemplate } from "../../../lib/EmailTemplate";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/supabase-server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const { name, email, service, message } = await req.json();
+    const { name, email, phone, service, message } = await req.json(); // ✅ include phone
 
-    // ✅ Basic validation
-    if (!name || !email || !message) {
+    // ✅ Basic validation (include phone)
+    if (!name || !email || !phone || !message) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -26,13 +26,19 @@ export async function POST(req: Request) {
         {
           name,
           email,
+          phone, 
           service,
           message,
+          status: "new", 
         },
       ]);
 
     if (dbError) {
       console.error("DB Error:", dbError);
+      return NextResponse.json(
+        { error: "Database insert failed" },
+        { status: 500 }
+      );
     }
 
     // ✅ 2. Send email to YOU
@@ -44,6 +50,7 @@ export async function POST(req: Request) {
         <h2>New Client Request</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p> <!-- ✅ added -->
         <p><strong>Service:</strong> ${service}</p>
         <p><strong>Message:</strong> ${message}</p>
       `,

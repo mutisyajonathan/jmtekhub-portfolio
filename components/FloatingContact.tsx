@@ -8,6 +8,41 @@ export default function FloatingContact() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
+    const [errors, setErrors] = useState<any>({});
+
+    const validate = (data: any) => {
+        const newErrors: any = {};
+
+        // Name validation
+        if (!data.name || data.name.trim().length < 2) {
+            newErrors.name = "Please enter a valid name";
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!data.email || !emailRegex.test(data.email)) {
+            newErrors.email = "Enter a valid email";
+        }
+
+        // Phone validation (Kenya-style basic check)
+        const phoneRegex = /^(?:\+?254|0)?[7][0-9]{8}$/;
+        if (!data.phone || !phoneRegex.test(data.phone)) {
+            newErrors.phone = "Enter a valid phone number";
+        }
+
+        // Service
+        if (!data.service) {
+            newErrors.service = "Please select a service";
+        }
+
+        // Message
+        if (!data.message || data.message.trim().length < 10) {
+            newErrors.message = "Message must be at least 10 characters";
+        }
+
+        return newErrors;
+    };
+
     return (
         <>
             {/* Floating Button */}
@@ -42,6 +77,7 @@ export default function FloatingContact() {
                                 onClick={() => {
                                     setOpen(false);
                                     setSuccess(false);
+                                    setErrors({});
                                 }}
                                 className="p-2 rounded-full hover:bg-gray-100 transition"
                             >
@@ -65,19 +101,27 @@ export default function FloatingContact() {
                                 className="space-y-5"
                                 onSubmit={async (e) => {
                                     e.preventDefault();
-                                    setLoading(true);
 
                                     const formData = new FormData(e.currentTarget);
 
                                     const payload = {
                                         name: formData.get("name"),
                                         email: formData.get("email"),
+                                        phone: formData.get("phone"),
                                         service: formData.get("service"),
                                         message: formData.get("message"),
                                     };
 
+                                    const validationErrors = validate(payload);
+                                    setErrors(validationErrors);
+
+                                    if (Object.keys(validationErrors).length > 0) {
+                                        return;
+                                    }
+
+                                    setLoading(true);
+
                                     try {
-                                        // Send email
                                         await fetch("/api/contact", {
                                             method: "POST",
                                             headers: {
@@ -86,10 +130,10 @@ export default function FloatingContact() {
                                             body: JSON.stringify(payload),
                                         });
 
-                                        // WhatsApp redirect
                                         const text = `Hello JM TekHub,%0A
 Name: ${payload.name}%0A
 Email: ${payload.email}%0A
+Phone: ${payload.phone}%0A
 Service: ${payload.service}%0A
 Message: ${payload.message}`;
 
@@ -107,45 +151,57 @@ Message: ${payload.message}`;
                                     }
                                 }}
                             >
-
                                 {/* Name */}
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Your Name
-                                    </label>
+                                <div className="space-y-1">
                                     <input
                                         name="name"
-                                        required
                                         type="text"
                                         placeholder="John Doe"
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:shadow-md transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
                                     />
+                                    {errors.name && (
+                                        <p className="text-red-500 text-xs font-medium">
+                                            {errors.name}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Email */}
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Email Address
-                                    </label>
+                                <div className="space-y-1">
                                     <input
                                         name="email"
-                                        required
                                         type="email"
                                         placeholder="you@example.com"
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:shadow-md transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
                                     />
+                                    {errors.email && (
+                                        <p className="text-red-500 text-xs font-medium">
+                                            {errors.email}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Phone */}
+                                <div className="space-y-1">
+                                    <input
+                                        name="phone"
+                                        type="tel"
+                                        placeholder="0720000000"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                    />
+                                    {errors.phone && (
+                                        <p className="text-red-500 text-xs font-medium">
+                                            {errors.phone}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Service */}
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Service Needed
-                                    </label>
+                                <div className="space-y-1">
                                     <select
                                         name="service"
-                                        required
                                         defaultValue=""
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:shadow-md transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
                                     >
                                         <option value="" disabled>
                                             Select a service
@@ -155,20 +211,26 @@ Message: ${payload.message}`;
                                         <option>Desktop Application Development</option>
                                         <option>IT Consulting</option>
                                     </select>
+                                    {errors.service && (
+                                        <p className="text-red-500 text-xs font-medium">
+                                            {errors.service}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Message */}
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Project Details
-                                    </label>
+                                <div className="space-y-1">
                                     <textarea
                                         name="message"
-                                        required
-                                        placeholder="Tell us about your project..."
                                         rows={4}
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:shadow-md transition"
+                                        placeholder="Tell us about your project..."
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
                                     />
+                                    {errors.message && (
+                                        <p style={{ color: "red" }}  className=" text-xs font-medium">
+                                            {errors.message}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Submit */}

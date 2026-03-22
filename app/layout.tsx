@@ -1,5 +1,6 @@
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next"
+
+import { Analytics } from "@vercel/analytics/next";
 import ParticleBackground from "../components/Particles";
 
 export const metadata = {
@@ -14,9 +15,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-950 text-white">
-           <ParticleBackground />
-        {children}
+      <body className="bg-gray-950 text-white relative">
+        {/* Background layer */}
+        <ParticleBackground />
+
+        {/* Main content */}
+        <div className="relative z-10">{children}</div>
+
+        {/* Analytics */}
+        <Analytics />
       </body>
     </html>
   );
