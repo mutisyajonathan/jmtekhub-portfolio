@@ -1,14 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
-  --primary-color: #010066;     /* deep blue */
-  --secondary-color: #8be872;   /* neon green */
-  --accent-color: #ff7a00;      /* orange glow from logo */
+  --primary-color: #010066;
+  /* deep blue */
+  --secondary-color: #8be872;
+  /* neon green */
+  --accent-color: #ff7a00;
+  /* orange glow from logo */
   --accent-blue: #3b82f6;
 
   --text-color: #e5e7eb;
@@ -25,7 +26,9 @@ body {
   color: var(--text-color);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: 'Orbitron', sans-serif;
 }
 
@@ -44,6 +47,7 @@ h1, h2, h3 {
     transform: translateY(40px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -57,7 +61,7 @@ h1, h2, h3 {
 .glass {
   background: var(--glass);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glow {
