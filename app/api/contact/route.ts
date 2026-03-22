@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { clientEmailTemplate } from "../../../lib/EmailTemplate";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { supabaseServer } from "@/lib/supabase/supabase-server";
+import { supabaseServer } from "../../../lib/supabase/supabase-server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

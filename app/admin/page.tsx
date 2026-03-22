@@ -18,11 +18,25 @@ export default function AdminPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const fetchLeads = async () => {
-    const res = await fetch("/api/leads");
-    const data = await res.json();
-    setLeads(data);
+    try {
+      const res = await fetch("/api/leads");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setLeads(data.filter(Boolean)); // remove null/undefined
+      } else {
+        console.error("Invalid API response:", data);
+        setLeads([]);
+      }
+    } catch (err) {
+      console.error("Fetch failed:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -32,30 +46,49 @@ export default function AdminPage() {
   }, []);
 
   const updateStatus = async (id: number, status: string) => {
-    await fetch("/api/leads/update", {
-      method: "POST",
-      body: JSON.stringify({ id, status }),
-    });
-    fetchLeads();
+    try {
+      await fetch("/api/leads/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, status }),
+      });
+      fetchLeads();
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
   };
 
   const deleteLead = async (id: number) => {
-    await fetch("/api/leads/delete", {
-      method: "POST",
-      body: JSON.stringify({ id }),
-    });
-    fetchLeads();
+    try {
+      await fetch("/api/leads/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+      fetchLeads();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   const filteredLeads = leads
+    .filter((l) => l && typeof l === "object")
     .filter((l) =>
       filter === "all" ? true : l.status === filter
     )
-    .filter(
-      (l) =>
-        l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l.email.toLowerCase().includes(search.toLowerCase())
-    );
+    .filter((l) => {
+      const name = l.name ?? "";
+      const email = l.email ?? "";
+
+      return (
+        name.toLowerCase().includes(search.toLowerCase()) ||
+        email.toLowerCase().includes(search.toLowerCase())
+      );
+    });
 
   return (
     <div className="min-h-screen text-white relative overflow-hidden bg-[#050510]">
@@ -66,11 +99,8 @@ export default function AdminPage() {
       <div className="relative z-10 p-6">
 
         {/* HEADER */}
-        <div className="
-          flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8
-          backdrop-blur-2xl bg-white/5 border border-white/5
-          p-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]
-        ">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8 backdrop-blur-2xl bg-white/5 border border-white/5 p-5 rounded-2xl">
+          
           <div>
             <h1 className="text-2xl font-bold text-[#8be872]">
               JM TekHub Dashboard
@@ -85,12 +115,7 @@ export default function AdminPage() {
             <input
               placeholder="Search leads..."
               onChange={(e) => setSearch(e.target.value)}
-              className="
-                bg-black/40 border border-white/10
-                px-3 py-2 rounded-lg text-sm
-                backdrop-blur-md
-                focus:outline-none focus:border-[#8be872]
-              "
+              className="bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-sm backdrop-blur-md focus:outline-none focus:border-[#8be872]"
             />
 
             {/* FILTER PILLS */}
@@ -99,10 +124,11 @@ export default function AdminPage() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-3 py-1 rounded-full border transition ${filter === f
+                  className={`px-3 py-1 rounded-full border transition ${
+                    filter === f
                       ? "bg-[#8be872] text-black"
                       : "bg-white/5 border-white/10 hover:bg-white/10"
-                    }`}
+                  }`}
                 >
                   {f}
                 </button>
@@ -114,8 +140,7 @@ export default function AdminPage() {
         </div>
 
         {/* METRICS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 gap-y-8 mb-10">
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {[
             { label: "Total Leads", value: leads.length, color: "text-white" },
             {
@@ -129,17 +154,7 @@ export default function AdminPage() {
               color: "text-green-400",
             },
           ].map((m, i) => (
-            <div
-              key={i}
-              className="
-                p-5 rounded-2xl
-                bg-white/5 backdrop-blur-2xl
-                border border-white/5
-                shadow-[0_8px_30px_rgba(0,0,0,0.5)]
-                hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]
-                transition-all duration-300
-              "
-            >
+            <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/5">
               <p className="text-xs text-gray-400">{m.label}</p>
               <h2 className={`text-2xl font-bold ${m.color}`}>
                 {m.value}
@@ -148,61 +163,47 @@ export default function AdminPage() {
           ))}
         </div>
 
+        {/* LOADING STATE */}
+        {loading && (
+          <p className="text-gray-400 text-sm">Loading leads...</p>
+        )}
+
         {/* LEADS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {filteredLeads.map((lead) => (
-            <div
-              key={lead.id}
-              className="
-                p-5 rounded-2xl
-                bg-white/5 backdrop-blur-2xl
-                border border-white/5
-                shadow-[0_10px_40px_rgba(0,0,0,0.6)]
-                hover:shadow-[0_15px_60px_rgba(0,0,0,0.75)]
-                hover:scale-[1.02]
-                transition-all duration-300
-                relative overflow-hidden
-              "
-            >
+          {filteredLeads.map((lead) => {
+            if (!lead?.id) return null;
 
-              {/* 🌟 Glass reflection */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 pointer-events-none" />
+            return (
+              <div
+                key={lead.id}
+                className="p-5 rounded-2xl bg-white/5 border border-white/5"
+              >
 
-              <div className="flex justify-between items-start relative z-10">
+                <h2 className="text-lg font-semibold">
+                  {lead.name || "No Name"}
+                </h2>
 
-                {/* LEFT */}
-                <div>
-                  <h2 className="text-lg font-semibold">{lead.name}</h2>
+                <p className="text-sm text-gray-400">
+                  {lead.email || "No Email"}
+                </p>
 
-                  <p className="text-sm text-gray-400">{lead.email}</p>
-                  <p>
-                    <a
-                      href={`tel:${lead.phone}`}
-                      className="text-sm text-blue-400 hover:underline"
-                    >
-                      📞 {lead.phone}
-                    </a></p>
+                <p className="text-sm text-blue-400">
+                  📞 {lead.phone || "N/A"}
+                </p>
 
-                  <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-[#8be872]/10 text-[#8be872] border border-[#8be872]/20">
-                    {lead.service}
-                  </span>
-                </div>
+                <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-[#8be872]/10 text-[#8be872] border border-[#8be872]/20">
+                  {lead.service || "N/A"}
+                </span>
 
-                {/* RIGHT */}
-                <div className="flex flex-col items-end gap-2">
-
+                {/* STATUS */}
+                <div className="mt-3">
                   <select
-                    value={lead.status}
+                    value={lead.status || "new"}
                     onChange={(e) =>
                       updateStatus(lead.id, e.target.value)
                     }
-                    className={`px-3 py-1 rounded-lg text-sm border border-white/10 backdrop-blur-md ${lead.status === "new"
-                        ? "bg-blue-600/80"
-                        : lead.status === "contacted"
-                          ? "bg-yellow-600/80"
-                          : "bg-green-600/80"
-                      }`}
+                    className="px-3 py-1 rounded-lg text-sm bg-black/40 border border-white/10"
                   >
                     <option value="new">New</option>
                     <option value="contacted">Contacted</option>
@@ -211,25 +212,24 @@ export default function AdminPage() {
 
                   <button
                     onClick={() => deleteLead(lead.id)}
-                    className="text-red-400 text-xs hover:text-red-300 transition"
+                    className="ml-3 text-red-400 text-xs"
                   >
                     Delete
                   </button>
                 </div>
+
+                <p className="mt-3 text-sm text-gray-300">
+                  {lead.message || "No message"}
+                </p>
+
+                <p className="mt-2 text-xs text-gray-500">
+                  {lead.created_at
+                    ? new Date(lead.created_at).toLocaleString()
+                    : "Invalid date"}
+                </p>
               </div>
-
-              {/* MESSAGE */}
-              <p className="mt-4 text-sm text-gray-300 leading-relaxed relative z-10">
-                {lead.message}
-              </p>
-
-              {/* DATE */}
-              <p className="mt-3 text-xs text-gray-500 relative z-10">
-                {new Date(lead.created_at).toLocaleString()}
-              </p>
-
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
