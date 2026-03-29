@@ -33,7 +33,7 @@ export default function PosCard() {
       {/* Image */}
       <div className="relative h-40 overflow-hidden">
         <Image
-          src="/images/dasarishot.png"
+          src="/images/prestigeafrica.png"
           alt="Web Application Preview"
           fill
           className={`object-cover transition-transform duration-700 ${
@@ -45,7 +45,7 @@ export default function PosCard() {
         <div className="absolute inset-0 bg-black/40 opacity-60 group-hover:opacity-30 transition" />
 
         <div className="absolute top-3 left-3 text-xs px-3 py-1 rounded-full bg-green-500/90 text-white shadow">
-          Live • 5+ Businesses
+          Live • 5+ Websites
         </div>
       </div>
 

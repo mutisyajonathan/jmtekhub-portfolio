@@ -1,41 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
-export default function FloatingContact() {
+export default function FloatingContact({ hidden }: { hidden?: boolean }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-
     const [errors, setErrors] = useState<any>({});
+const pathname = usePathname();
+    // ✅ Listen for CTA trigger from ChatWidget
+    useEffect(() => {
+        console.log("🚀 FloatingContact mounted");
+
+        const handler = (e: any) => {
+            console.log("🎯 EVENT RECEIVED", e.detail);
+            setOpen(true);
+        };
+
+        window.addEventListener("open-contact-form", handler);
+
+        return () => {
+            window.removeEventListener("open-contact-form", handler);
+        };
+    }, []);
 
     const validate = (data: any) => {
         const newErrors: any = {};
 
-        // Name validation
         if (!data.name || data.name.trim().length < 2) {
             newErrors.name = "Please enter a valid name";
         }
 
-        // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!data.email || !emailRegex.test(data.email)) {
             newErrors.email = "Enter a valid email";
         }
 
-        // Phone validation (Kenya-style basic check)
         const phoneRegex = /^(?:\+?254|0)?[7][0-9]{8}$/;
         if (!data.phone || !phoneRegex.test(data.phone)) {
             newErrors.phone = "Enter a valid phone number";
         }
 
-        // Service
         if (!data.service) {
             newErrors.service = "Please select a service";
         }
 
-        // Message
         if (!data.message || data.message.trim().length < 10) {
             newErrors.message = "Message must be at least 10 characters";
         }
@@ -46,22 +57,22 @@ export default function FloatingContact() {
     return (
         <>
             {/* Floating Button */}
-            <button
-                onClick={() => setOpen(true)}
-                className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full text-white shadow-xl transition hover:scale-105"
-                style={{
-                    background: "var(--primary-color)",
-                    boxShadow: "0 10px 30px rgba(1, 0, 102, 0.5)",
-                }}
-            >
-                <MessageCircle size={20} />
-                <span className="text-sm font-medium">Talk to us</span>
-            </button>
-
+            {pathname === "/services" && (
+                <button
+                    onClick={() => setOpen(true)}
+                    className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full text-white shadow-xl transition hover:scale-105"
+                    style={{
+                        background: "var(--primary-color)",
+                        boxShadow: "0 10px 30px rgba(1, 0, 102, 0.5)",
+                    }}
+                >
+                    <MessageCircle size={20} />
+                    <span className="text-sm font-medium">Talk to us</span>
+                </button>
+            )}
             {/* Modal */}
             {open && (
                 <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm">
-
                     <div className="w-full md:w-[420px] bg-white rounded-t-2xl md:rounded-2xl p-6 animate-slideUp shadow-2xl">
 
                         {/* Header */}
@@ -85,7 +96,7 @@ export default function FloatingContact() {
                             </button>
                         </div>
 
-                        {/* SUCCESS STATE */}
+                        {/* SUCCESS */}
                         {success ? (
                             <div className="text-center py-10">
                                 <h3 className="text-lg font-semibold text-green-600">
@@ -96,7 +107,6 @@ export default function FloatingContact() {
                                 </p>
                             </div>
                         ) : (
-                            /* Form */
                             <form
                                 className="space-y-5"
                                 onSubmit={async (e) => {
@@ -115,9 +125,7 @@ export default function FloatingContact() {
                                     const validationErrors = validate(payload);
                                     setErrors(validationErrors);
 
-                                    if (Object.keys(validationErrors).length > 0) {
-                                        return;
-                                    }
+                                    if (Object.keys(validationErrors).length > 0) return;
 
                                     setLoading(true);
 
@@ -152,56 +160,50 @@ Message: ${payload.message}`;
                                 }}
                             >
                                 {/* Name */}
-                                <div className="space-y-1">
+                                <div>
                                     <input
                                         name="name"
                                         type="text"
                                         placeholder="John Doe"
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                                     />
                                     {errors.name && (
-                                        <p className="text-red-500 text-xs font-medium">
-                                            {errors.name}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{errors.name}</p>
                                     )}
                                 </div>
 
                                 {/* Email */}
-                                <div className="space-y-1">
+                                <div>
                                     <input
                                         name="email"
                                         type="email"
                                         placeholder="you@example.com"
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                                     />
                                     {errors.email && (
-                                        <p className="text-red-500 text-xs font-medium">
-                                            {errors.email}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{errors.email}</p>
                                     )}
                                 </div>
 
                                 {/* Phone */}
-                                <div className="space-y-1">
+                                <div>
                                     <input
                                         name="phone"
                                         type="tel"
                                         placeholder="0720000000"
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                                     />
                                     {errors.phone && (
-                                        <p className="text-red-500 text-xs font-medium">
-                                            {errors.phone}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{errors.phone}</p>
                                     )}
                                 </div>
 
                                 {/* Service */}
-                                <div className="space-y-1">
+                                <div>
                                     <select
                                         name="service"
                                         defaultValue=""
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                                     >
                                         <option value="" disabled>
                                             Select a service
@@ -212,24 +214,20 @@ Message: ${payload.message}`;
                                         <option>IT Consulting</option>
                                     </select>
                                     {errors.service && (
-                                        <p className="text-red-500 text-xs font-medium">
-                                            {errors.service}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{errors.service}</p>
                                     )}
                                 </div>
 
                                 {/* Message */}
-                                <div className="space-y-1">
+                                <div>
                                     <textarea
                                         name="message"
                                         rows={4}
                                         placeholder="Tell us about your project..."
-                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
+                                        className="w-full p-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                                     />
                                     {errors.message && (
-                                        <p style={{ color: "red" }}  className=" text-xs font-medium">
-                                            {errors.message}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{errors.message}</p>
                                     )}
                                 </div>
 
@@ -238,9 +236,7 @@ Message: ${payload.message}`;
                                     type="submit"
                                     disabled={loading}
                                     className="w-full py-3 rounded-lg text-white font-medium transition hover:opacity-90 disabled:opacity-60"
-                                    style={{
-                                        background: "var(--primary-color)",
-                                    }}
+                                    style={{ background: "var(--primary-color)" }}
                                 >
                                     {loading ? "Sending..." : "Send Request"}
                                 </button>

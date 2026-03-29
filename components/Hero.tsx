@@ -16,7 +16,6 @@ export default function Hero() {
         router.push(fallback);
       }
     };
-
     setTimeout(attemptScroll, 100);
   };
 
@@ -24,7 +23,7 @@ export default function Hero() {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
         delayChildren: 0.2,
       },
     },
@@ -33,13 +32,11 @@ export default function Hero() {
   const item: Variants = {
     hidden: {
       opacity: 0,
-      y: shouldReduceMotion ? 0 : 30,
-      scale: shouldReduceMotion ? 1 : 0.98,
+      y: shouldReduceMotion ? 0 : 24,
     },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
         duration: 0.5,
         ease: "easeOut",
@@ -48,25 +45,24 @@ export default function Hero() {
   };
 
   return (
-    <section className="min-h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
+   <section className="min-h-screen flex items-center justify-center px-6 pt-24 relative overflow-hidden">
       
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.08),transparent_60%)]" />
+      {/* Background glow */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.08),transparent_65%)]" />
 
       <motion.div
         variants={container}
         initial="hidden"
         animate="visible"
-        className="flex flex-col items-center"
+        className="max-w-4xl mx-auto text-center flex flex-col items-center"
       >
-        {/* Title with subtle animated blue hues */}
+        {/* Headline */}
         <motion.h1
           variants={item}
-          className="text-6xl md:text-8xl font-extrabold text-transparent bg-clip-text tracking-tight"
+          className="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #2563eb, #06b6d4, #3b82f6)",
-            backgroundSize: "100% 100%",
           }}
           animate={
             shouldReduceMotion
@@ -86,51 +82,69 @@ export default function Hero() {
             repeat: Infinity,
           }}
         >
-          JM Tekhub
+          Building Scalable Systems That Businesses Rely On
         </motion.h1>
 
-        {/* Subtitle */}
+        {/* Brand */}
         <motion.p
           variants={item}
-          className="mt-6 text-gray-400 max-w-xl text-lg leading-relaxed"
+          className="mt-3 text-blue-400 font-medium tracking-wide"
         >
-          I design and build secure, scalable software that solves real business problems.
+          JM TekHub
+        </motion.p>
+
+        {/* Description */}
+        <motion.p
+          variants={item}
+          className="mt-6 text-gray-400 max-w-2xl text-lg leading-relaxed"
+        >
+          I build high-performance web applications, dashboards, and backend
+          systems using modern technologies like Next.js, Supabase, and cloud
+          infrastructure.
+        </motion.p>
+
+        {/* Credibility */}
+        <motion.p
+          variants={item}
+          className="mt-4 text-sm text-gray-500"
+        >
+          10+ years experience in software development
         </motion.p>
 
         {/* Divider */}
         <motion.div
           variants={item}
-          className="w-16 h-[2px] bg-blue-500/40 mt-6"
+          className="w-20 h-[2px] bg-blue-500/40 mt-8"
         />
 
-        {/* Buttons */}
+        {/* CTA */}
         <motion.div
           variants={item}
           className="mt-10 flex gap-4 flex-wrap justify-center"
         >
-          {/* View Work */}
-          <a
-            href="/#projects"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection("projects", "/projects");
-            }}
-            className="px-6 py-3 rounded-lg backdrop-blur-md bg-blue-600/20 border border-blue-500/40 text-blue-300 transition hover:scale-105 hover:bg-blue-500/30"
+          {/* Primary */}
+          <button
+            onClick={() => scrollToSection("projects", "/projects")}
+            className="px-7 py-3 rounded-lg bg-blue-600 text-white font-medium transition hover:scale-105 hover:bg-blue-700 shadow-lg shadow-blue-600/20"
           >
-            View Work
-          </a>
+            Explore My Work
+          </button>
 
-          {/* Contact */}
-          <a
-            href="/#contact"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection("contact", "/#contact");
-            }}
-            className="px-6 py-3 rounded-lg backdrop-blur-md border border-blue-400/40 text-blue-300 transition hover:scale-105 hover:bg-blue-500/10"
+          {/* Secondary */}
+          <button
+            onClick={() => scrollToSection("contact", "/#contact")}
+            className="px-7 py-3 rounded-lg border border-blue-400/40 text-blue-300 transition hover:scale-105 hover:bg-blue-500/10"
           >
-            Contact
-          </a>
+            Let’s Talk
+          </button>
+        </motion.div>
+
+        {/* Subtle dev signature */}
+        <motion.div
+          variants={item}
+          className="mt-16 text-xs text-gray-600 font-mono opacity-70"
+        >
+          {"<engineered for scale />"}
         </motion.div>
       </motion.div>
     </section>

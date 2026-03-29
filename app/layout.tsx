@@ -1,7 +1,9 @@
 import "./globals.css";
-
+import Navbar from "../components/Navbar";
 import { Analytics } from "@vercel/analytics/next";
 import ParticleBackground from "../components/Particles";
+import FloatingContact from "../components/FloatingContact";
+import ChatWidget from "../components/ChatWidget";
 
 export const metadata = {
   title: "JM TekHub | Portfolio",
@@ -15,14 +17,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+
       <body className="bg-gray-950 text-white relative">
         {/* Background layer */}
         <ParticleBackground />
 
         {/* Main content */}
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10">
+          <Navbar />
+          {children}
+        </div>
 
-        {/* Analytics */}
+        <ChatWidget />
+        <FloatingContact hidden />
         <Analytics />
       </body>
     </html>

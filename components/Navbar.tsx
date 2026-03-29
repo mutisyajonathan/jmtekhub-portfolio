@@ -8,11 +8,12 @@ export default function Navbar() {
   const [active, setActive] = useState<string>("");
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
 
-  // 🔥 Scroll to section (works cross-route)
+  // 🔥 Navigate to section (cross-route safe)
   const navigateToSection = (id: string) => {
     setMobileOpen(false);
     setActive(id);
@@ -25,7 +26,7 @@ export default function Navbar() {
     }
   };
 
-  // 🔥 Handle hash on page load (important)
+  // 🔥 Handle hash on load
   useEffect(() => {
     if (pathname === "/" && window.location.hash) {
       const id = window.location.hash.replace("#", "");
@@ -39,7 +40,7 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  // 🔥 Scroll tracking (home only)
+  // 🔥 Scroll tracking + progress bar
   useEffect(() => {
     if (pathname !== "/") return;
 
@@ -50,6 +51,8 @@ export default function Navbar() {
 
       const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       setScrollProgress(progress);
+
+      setScrolled(scrollTop > 10);
 
       const sections = ["projects", "contact"];
       let current = "";
@@ -71,7 +74,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [pathname]);
 
-  // 🔥 Sync active with route
+  // 🔥 Sync active route
   useEffect(() => {
     if (pathname === "/services") {
       setActive("services");
@@ -80,7 +83,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Progress Bar (home only) */}
+      {/* Progress Bar */}
       {pathname === "/" && (
         <div className="fixed top-0 left-0 w-full h-[2px] z-[60]">
           <div
@@ -90,8 +93,11 @@ export default function Navbar() {
         </div>
       )}
 
-      <nav className="fixed top-[2px] w-full z-50 backdrop-blur-md bg-black/30 border-b border-white/10 px-6 py-4 flex justify-between items-center">
-        
+      {/* Navbar */}
+      <nav
+        className={`fixed top-[2px] w-full z-50 transition-all duration-300 backdrop-blur-md border-b border-white/10 px-6 flex justify-between items-center
+        ${scrolled ? "h-16 bg-black/60" : "h-20 bg-black/30"}`}
+      >
         {/* Logo */}
         <Link href="/">
           <h1 className="text-lg font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 cursor-pointer">
@@ -99,14 +105,12 @@ export default function Navbar() {
           </h1>
         </Link>
 
-        {/* Desktop */}
+        {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6 text-sm items-center">
-
-          {/* SERVICES (route) */}
           <Link
             href="/services"
             onClick={() => setActive("services")}
-            className={`relative transition duration-300 ${
+            className={`transition duration-300 ${
               active === "services"
                 ? "text-blue-400"
                 : "text-gray-300 hover:text-white"
@@ -115,10 +119,9 @@ export default function Navbar() {
             Services
           </Link>
 
-          {/* PROJECTS */}
           <button
             onClick={() => navigateToSection("projects")}
-            className={`relative transition duration-300 ${
+            className={`transition duration-300 ${
               active === "projects"
                 ? "text-blue-400"
                 : "text-gray-300 hover:text-white"
@@ -127,10 +130,9 @@ export default function Navbar() {
             Projects
           </button>
 
-          {/* CONTACT */}
           <button
             onClick={() => navigateToSection("contact")}
-            className={`relative transition duration-300 ${
+            className={`transition duration-300 ${
               active === "contact"
                 ? "text-blue-400"
                 : "text-gray-300 hover:text-white"
@@ -153,8 +155,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="fixed top-[60px] left-0 w-full bg-black/90 backdrop-blur-md z-40 flex flex-col items-center py-6 space-y-6 md:hidden">
-          
+        <div className="fixed top-20 left-0 w-full bg-black/90 backdrop-blur-md z-40 flex flex-col items-center py-6 space-y-6 md:hidden">
           <Link href="/services" onClick={() => setMobileOpen(false)}>
             Services
           </Link>

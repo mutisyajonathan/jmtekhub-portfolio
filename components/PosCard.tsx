@@ -23,7 +23,7 @@ export default function PosCard() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="group relative w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500"
+      className="group relative w-full max-w-md md:max-w-lg lg:max-w-xl rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500"
     >
       {/* Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none">
@@ -31,16 +31,15 @@ export default function PosCard() {
       </div>
 
       {/* Image */}
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative h-48 md:h-56 lg:h-64 overflow-hidden">
         <Image
           src="/images/hotelposshot.png"
           alt="Restaurant POS system preview"
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
-          priority={false}
         />
 
-        <div className="absolute inset-0 bg-black/40 opacity-60 group-hover:opacity-30 transition" />
+        <div className="absolute inset-0 bg-black/40 group-hover:opacity-30 transition" />
 
         <div className="absolute top-3 left-3 text-xs px-3 py-1 rounded-full bg-green-500/90 text-white shadow">
           Live • 3+ Businesses
@@ -48,17 +47,17 @@ export default function PosCard() {
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-white mb-1">
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-white mb-2">
           Restaurant POS System
         </h3>
 
-        <p className="text-gray-400 text-sm mb-4">
+        <p className="text-gray-400 text-sm mb-5 leading-relaxed">
           End-to-end solution for orders, payments, and real-time inventory.
         </p>
 
         {/* Features */}
-        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+        <div className="grid grid-cols-2 gap-3 text-sm mb-5">
           <Feature icon={<ShoppingCart size={16} />} label="Orders" />
           <Feature icon={<BarChart3 size={16} />} label="Analytics" />
           <Feature icon={<Database size={16} />} label="Inventory" />
@@ -66,8 +65,8 @@ export default function PosCard() {
         </div>
 
         {/* Tech */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {["Php", "Javascript", "Bootstrap","MySql Database"].map((tech) => (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {["PHP", "JavaScript", "Bootstrap", "MySQL"].map((tech) => (
             <span
               key={tech}
               className="text-xs px-2 py-1 rounded-md bg-white/10 text-gray-300 backdrop-blur"
@@ -83,7 +82,7 @@ export default function PosCard() {
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 text-sm py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
+            className="flex-1 flex items-center justify-center gap-2 text-sm py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition font-medium"
           >
             <ExternalLink size={14} />
             Live Demo
@@ -93,7 +92,7 @@ export default function PosCard() {
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 text-sm py-2 rounded-lg border border-white/20 hover:bg-white/10 transition"
+            className="flex-1 flex items-center justify-center gap-2 text-sm py-2.5 rounded-lg border border-white/20 hover:bg-white/10 transition"
           >
             <Github size={14} />
             Code
