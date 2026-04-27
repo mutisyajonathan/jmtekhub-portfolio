@@ -22,7 +22,7 @@ export default function Home() {
       {/* CTA */}
       <section className="text-center py-20">
         <h2 className="text-3xl font-bold">
-          Let’s build something impactful
+          Let's build something impactful
         </h2>
         <p className="text-gray-400 mt-4">
           Available for freelance and full-time opportunities

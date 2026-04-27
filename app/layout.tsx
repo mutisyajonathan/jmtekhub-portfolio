@@ -29,7 +29,6 @@ export default function RootLayout({
         </div>
 
         <ChatWidget />
-        <FloatingContact hidden />
         <Analytics />
       </body>
     </html>

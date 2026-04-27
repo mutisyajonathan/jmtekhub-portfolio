@@ -14,7 +14,7 @@ export default function Projects() {
             Selected Work
           </h2>
           <p className="text-gray-400 mt-4 max-w-xl mx-auto">
-            A collection of systems and applications I’ve built to solve real-world problems.
+            A collection of systems and applications I've built to solve real-world problems.
           </p>
         </div>
 
