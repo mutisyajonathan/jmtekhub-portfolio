@@ -82,7 +82,7 @@ export default function Hero() {
             repeat: Infinity,
           }}
         >
-          Building Scalable Systems That Businesses Rely On
+          Building Scalable Systems for your Business
         </motion.h1>
 
         {/* Brand */}
