@@ -3,7 +3,6 @@
 
 import Navbar from "@/components/Navbar";
 import Services from "../../components/Services";
-import FloatingContact from "../../components/FloatingContact";
 
 export default function ServicesPage() {
   return (

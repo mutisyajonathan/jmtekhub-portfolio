@@ -1,26 +1,66 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MessageCircle, X } from "lucide-react";
+import {
+  Send,
+  MessageCircle,
+  X,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
+
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  cta?: {
+    demo?: boolean;
+    contact?: boolean;
+  };
+};
 
 export default function ChatWidget() {
-  const [messages, setMessages] = useState<any[]>([]);
-  const [input, setInput] = useState("");
+  // ---------------- CHAT STATE ----------------
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      role: "assistant",
+      content:
+        "Hi 👋 I'm JM Tekhub Assistant. Ask me about POS systems, websites, chatbots, pricing or custom software.",
+    },
+  ]);
+
+  const [chatInput, setChatInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // 🔥 controls visibility
+  const [isOpen, setIsOpen] = useState(false);
+
+  // ---------------- LEAD STATE ----------------
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadType, setLeadType] = useState<"demo" | "contact">("demo");
+  const [sendingLead, setSendingLead] = useState(false);
+  const [leadSuccess, setLeadSuccess] = useState(false);
+
+  const [leadData, setLeadData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
+  // ---------------- SEND CHAT ----------------
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!chatInput.trim() || loading) return;
 
-    const newMessages = [...messages, { role: "user", content: input }];
+    const newMessages = [
+      ...messages,
+      { role: "user", content: chatInput } as Msg,
+    ];
+
     setMessages(newMessages);
-    setInput("");
+    setChatInput("");
     setLoading(true);
 
     try {
@@ -31,8 +71,7 @@ export default function ChatWidget() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Request failed");
+      if (!res.ok) throw new Error(data.error || "Failed");
 
       setMessages([
         ...newMessages,
@@ -42,12 +81,12 @@ export default function ChatWidget() {
           cta: data.cta,
         },
       ]);
-    } catch (err: any) {
+    } catch {
       setMessages([
         ...newMessages,
         {
           role: "assistant",
-          content: "⚠️ Error: " + err.message,
+          content: "⚠️ Sorry, something went wrong.",
         },
       ]);
     }
@@ -55,65 +94,117 @@ export default function ChatWidget() {
     setLoading(false);
   };
 
-  const handleDemo = () => {
-    window.dispatchEvent(new CustomEvent("open-contact-form"));
+  // ---------------- LEAD MODAL ----------------
+  const openLeadForm = (type: "demo" | "contact") => {
+    setLeadType(type);
+    setLeadSuccess(false);
+    setShowLeadForm(true);
   };
 
-  const handleContact = () => {
-    window.dispatchEvent(
-      new CustomEvent("open-contact-form", {
-        detail: { source: "chat", type: "contact" },
-      })
-    );
+  const submitLead = async () => {
+    if (
+      !leadData.name.trim() ||
+      !leadData.phone.trim() ||
+      !leadData.email.trim()
+    )
+      return;
+
+    setSendingLead(true);
+
+    try {
+      await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: leadData.name,
+          secondName: "",
+          email: leadData.email,
+          phone: leadData.phone,
+          service:
+            leadType === "demo"
+              ? "Chatbot Demo Request"
+              : "General Contact Request",
+          comments: messages
+            .map((m) => `${m.role}: ${m.content}`)
+            .join("\n"),
+        }),
+      });
+
+      setLeadSuccess(true);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "✅ Thank you. Your request has been received. We'll contact you shortly.",
+        },
+      ]);
+
+      setTimeout(() => {
+        setShowLeadForm(false);
+        setLeadData({ name: "", phone: "", email: "" });
+      }, 1500);
+    } catch {
+      alert("Failed to submit request.");
+    }
+
+    setSendingLead(false);
   };
 
+  // ---------------- UI ----------------
   return (
     <>
-      {/* 🔥 OPEN BUTTON (when minimized) */}
+      {/* OPEN BUTTON */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 z-50 flex items-center gap-2"
+          className="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center gap-2"
         >
-          
-          <MessageCircle size={18} />Chat
+          <MessageCircle size={18} />
+          Chat
         </button>
       )}
 
-      {/* 🔥 CHAT WIDGET */}
+      {/* WIDGET */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 w-80 h-[420px] z-50 bg-white text-black border border-gray-300 shadow-2xl rounded-2xl flex flex-col">
+        <div className="fixed bottom-4 right-4 z-50 w-[350px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
 
-          {/* Header with close button */}
-          <div className="p-3 border-b font-semibold bg-gray-100 rounded-t-2xl flex justify-between items-center">
-            <span>JM Tekhub Assistant</span>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-600 hover:text-black"
-            >
-              <X size={18} />
+          {/* HEADER */}
+          <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-sm text-black">
+                JM Tekhub Assistant
+              </h3>
+              <p className="text-xs text-green-600">Online now</p>
+            </div>
+
+            <button onClick={() => setIsOpen(false)}>
+              <X size={18} className="text-gray-500 hover:text-black" />
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
+          {/* MESSAGES */}
+          <div className="flex-1 overflow-y-auto p-3 bg-gray-50 space-y-3">
             {messages.map((m, i) => (
-              <div key={i} className="flex flex-col">
+              <div key={i}>
                 <div
-                  className={`p-3 rounded-2xl text-sm max-w-[80%] shadow-sm whitespace-pre-wrap ${m.role === "user"
-                      ? "bg-blue-600 text-white ml-auto"
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
+                    m.role === "user"
+                      ? "ml-auto bg-blue-600 text-white"
                       : "bg-white text-black border"
-                    }`}
+                  }`}
                 >
                   {m.content}
                 </div>
 
+                {/* CTA */}
                 {m.role === "assistant" && m.cta && (
-                  <div className="flex gap-2 mt-2 ml-1">
+                  <div className="flex gap-2 mt-2">
                     {m.cta.demo && (
                       <button
-                        onClick={handleDemo}
-                        className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-green-700"
+                        onClick={() => openLeadForm("demo")}
+                        className="text-xs px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white"
                       >
                         Request Demo
                       </button>
@@ -121,8 +212,8 @@ export default function ChatWidget() {
 
                     {m.cta.contact && (
                       <button
-                        onClick={handleContact}
-                        className="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs hover:bg-orange-600"
+                        onClick={() => openLeadForm("contact")}
+                        className="text-xs px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white"
                       >
                         Contact Us
                       </button>
@@ -133,33 +224,122 @@ export default function ChatWidget() {
             ))}
 
             {loading && (
-              <div className="text-gray-500 text-sm">Thinking...</div>
+              <div className="text-sm text-gray-500 flex items-center gap-2">
+                <Loader2 size={14} className="animate-spin" />
+                Thinking...
+              </div>
             )}
 
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <div className="p-2 border-t flex gap-2 bg-white rounded-b-2xl">
+          {/* INPUT (ONLY ONE — FIXED) */}
+          <div className="p-3 border-t bg-white flex gap-2">
             <input
-              className="flex-1 border border-gray-300 rounded-lg p-2 text-sm"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about my projects..."
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage();
-              }}
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Ask about my services..."
+              className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm text-black bg-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             />
 
-            {/* 🔥 Send button with icon */}
             <button
               onClick={sendMessage}
               disabled={loading}
-              className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
             >
               <Send size={18} />
             </button>
           </div>
+
+          {/* LEAD MODAL */}
+          {showLeadForm && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl">
+
+                {!leadSuccess ? (
+                  <>
+                    <h3 className="font-bold text-lg text-black">
+                      {leadType === "demo"
+                        ? "Request Demo"
+                        : "Contact Request"}
+                    </h3>
+
+                    <p className="text-sm text-gray-500 mt-1 mb-4">
+                      Leave your details and we’ll reach out shortly.
+                    </p>
+
+                    <div className="space-y-3">
+                      <input
+                        placeholder="Full Name"
+                        value={leadData.name}
+                        onChange={(e) =>
+                          setLeadData({
+                            ...leadData,
+                            name: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded-xl px-3 py-2 text-sm text-black"
+                      />
+
+                      <input
+                        placeholder="Phone Number"
+                        value={leadData.phone}
+                        onChange={(e) =>
+                          setLeadData({
+                            ...leadData,
+                            phone: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded-xl px-3 py-2 text-sm text-black"
+                      />
+
+                      <input
+                        placeholder="Email Address"
+                        value={leadData.email}
+                        onChange={(e) =>
+                          setLeadData({
+                            ...leadData,
+                            email: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded-xl px-3 py-2 text-sm text-black"
+                      />
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-3">
+                      Your information will only be used to contact you regarding your request.
+                    </p>
+
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => setShowLeadForm(false)}
+                        className="flex-1 border rounded-xl py-2 text-sm"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        onClick={submitLead}
+                        disabled={sendingLead}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 text-sm"
+                      >
+                        {sendingLead ? "Sending..." : "Submit"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-6">
+                    <CheckCircle2 className="mx-auto text-green-600" size={42} />
+                    <h3 className="font-semibold mt-3">Request Sent</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      We'll contact you shortly.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
