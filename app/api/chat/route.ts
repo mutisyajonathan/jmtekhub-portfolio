@@ -1,4 +1,5 @@
-import { generateGeminiResponse } from '../../../lib/gemini';
+import { generateGeminiResponse } from "../../../lib/gemini";
+import { classificationPrompt } from "../../../lib/classifier";
 
 export async function POST(req: Request) {
   try {
@@ -6,50 +7,108 @@ export async function POST(req: Request) {
     let { messages, memory = {}, lead = {} } = body;
 
     if (!Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: 'Invalid messages format' }), { status: 400 });
+      return Response.json({ error: "Invalid messages format" }, { status: 400 });
     }
 
-    messages = messages.slice(-20);
-    const lastUser = messages[messages.length - 1]?.content?.toLowerCase?.() || '';
+    const lastUser =
+      messages[messages.length - 1]?.content?.toLowerCase?.() || "";
 
-    const profile = {
-      city: memory.city || '',
-      businessType: memory.businessType || '',
-      branches: memory.branches || ''
+    // -------------------------------
+    // 1. AI CLASSIFICATION STEP
+    // -------------------------------
+    const classificationRaw = await generateGeminiResponse([
+      classificationPrompt(messages, memory),
+    ]);
+
+    let state;
+    try {
+      state = JSON.parse(classificationRaw);
+    } catch {
+      state = {
+        intent: "general",
+        stage: "DISCOVERY",
+        confidence: 0.5,
+        leadReady: false,
+      };
+    }
+
+    // -------------------------------
+    // 2. UPDATE MEMORY (STATEFUL)
+    // -------------------------------
+    const updatedMemory = {
+      ...memory,
+      intent: state.intent,
+      stage: state.stage,
+      confidence: state.confidence,
     };
 
+    // -------------------------------
+    // 3. BUSINESS LOGIC ENGINE
+    // -------------------------------
+    const shouldRequestLead =
+      state.leadReady ||
+      state.stage === "LEAD_CAPTURE" ||
+      /demo|quote|price|cost|install/i.test(lastUser);
+
+    const productMap: Record<string, string> = {
+      restaurant_pos: "Restaurant POS",
+      web_development: "Web Development",
+      ai_chatbot: "AI Chatbots",
+      general: "General Services",
+    };
+
+    const product = productMap[state.intent] || "General Services";
+
+    // -------------------------------
+    // 4. SYSTEM PROMPT (CONTEXTUAL)
+    // -------------------------------
     const systemMessage = {
-      role: 'user',
-      content: `You are JM Tekhub Assistant, a professional sales consultant for JM Tekhub.
-Products: Restaurant POS, Supermarket POS, Web Development, AI Chatbots.
-Restaurant POS supports tables, split payments, M-Pesa, PDQ, reports, inventory, petty cash, kitchen workflow.
-Use consultative sales style. Be concise.
-If user mentions restaurant/cafe/hotel prioritize Restaurant POS.
-If user asks price, quote, demo, install, setup -> request lead details politely.
-Use memory context when relevant.
-Known customer context: City=${profile.city}; Business=${profile.businessType}; Branches=${profile.branches}
-Pricing depends on users, branches, devices, modules, customization.`
+      role: "user",
+      content: `
+You are JM Tekhub AI Sales Assistant.
+
+Product focus: ${product}
+
+Stage: ${state.stage}
+Intent: ${state.intent}
+
+Guidelines:
+- Be concise and professional
+- If DISCOVERY → explain value briefly
+- If QUALIFICATION → ask smart business questions
+- If PROPOSAL → explain solution fit
+- If LEAD_CAPTURE → request contact details politely
+- Never overwhelm user with pricing early
+
+Context:
+${JSON.stringify(updatedMemory)}
+`,
     };
 
-    const reply = await generateGeminiResponse([systemMessage, ...messages]);
+    // -------------------------------
+    // 5. RESPONSE GENERATION
+    // -------------------------------
+    const reply = await generateGeminiResponse([
+      systemMessage,
+      ...messages,
+    ]);
 
-    const wantsLead = /(price|cost|quote|demo|setup|install)/i.test(lastUser);
-    const wantsRestaurant = /(restaurant|cafe|coffee|hotel|food|table|kitchen)/i.test(lastUser);
-    const wantsWeb = /(website|web app|site)/i.test(lastUser);
-    const wantsBot = /(chatbot|ai bot|assistant)/i.test(lastUser);
-
-    let product = 'General Services';
-    if (wantsRestaurant) product = 'Restaurant POS';
-    else if (wantsWeb) product = 'Web Development';
-    else if (wantsBot) product = 'AI Chatbots';
-
+    // -------------------------------
+    // 6. RESPONSE CONTRACT
+    // -------------------------------
     return Response.json({
-      message: reply || 'How can I help you today?',
-      lead_capture: wantsLead,
+      message: reply || "How can I help you today?",
+      state: updatedMemory,
       suggested_product: product,
-      next_action: wantsLead ? 'Collect name, business, phone, branches' : 'Continue conversation'
+      lead_capture: shouldRequestLead,
+      next_action: shouldRequestLead
+        ? "COLLECT_LEAD"
+        : "CONTINUE_CONVERSATION",
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message || 'Failed to generate response' }), { status: 500 });
+    return Response.json(
+      { error: error.message || "Failed to generate response" },
+      { status: 500 }
+    );
   }
 }
