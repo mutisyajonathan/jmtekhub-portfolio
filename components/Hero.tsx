@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useReducedMotion, Variants, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  Variants,
+  AnimatePresence,
+} from "framer-motion";
 import { useRouter } from "next/navigation";
 import { X, Send, Loader2 } from "lucide-react";
+
+/* =========================================================
+   Hero.tsx
+========================================================= */
 
 export default function Hero() {
   const router = useRouter();
@@ -23,25 +32,27 @@ export default function Hero() {
   });
 
   const scrollToSection = (id: string, fallback: string) => {
-    const attemptScroll = () => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      } else {
-        router.push(fallback);
-      }
-    };
-    setTimeout(attemptScroll, 100);
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push(fallback);
+    }
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+      | React.ChangeEvent<HTMLSelectElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
     setSuccess("");
 
@@ -58,6 +69,7 @@ export default function Hero() {
 
       if (res.ok) {
         setSuccess("Message sent successfully.");
+
         setForm({
           firstName: "",
           secondName: "",
@@ -85,8 +97,8 @@ export default function Hero() {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
+        staggerChildren: 0.12,
+        delayChildren: 0.15,
       },
     },
   };
@@ -100,7 +112,7 @@ export default function Hero() {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.45,
         ease: "easeOut",
       },
     },
@@ -109,49 +121,51 @@ export default function Hero() {
   return (
     <>
       <section className="min-h-screen flex items-center justify-center px-6 pt-24 relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.08),transparent_65%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.10),transparent_65%)]" />
 
         <motion.div
           variants={container}
           initial="hidden"
           animate="visible"
-          className="max-w-4xl mx-auto text-center flex flex-col items-center"
+          className="max-w-5xl mx-auto text-center"
         >
-          <motion.h1
-            variants={item}
-            className="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, #2563eb, #06b6d4, #3b82f6)",
-            }}
-          >
-            Building Scalable Systems for your Business
-          </motion.h1>
-
           <motion.p
             variants={item}
-            className="mt-3 text-blue-400 font-medium tracking-wide"
+            className="text-blue-400 uppercase tracking-[0.3em] text-xs md:text-sm"
           >
             JM TekHub
           </motion.p>
 
+          <motion.h1
+            variants={item}
+            className="mt-4 text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text leading-tight"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg,#2563eb,#06b6d4,#3b82f6)",
+            }}
+          >
+            Building Scalable Systems
+            <br />
+            for your Business
+          </motion.h1>
+
           <motion.p
             variants={item}
-            className="mt-6 text-gray-400 max-w-2xl text-lg leading-relaxed"
+            className="mt-7 text-gray-400 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
           >
-            I build high-performance web applications, dashboards, and backend
-            systems using modern technologies like Next.js, Supabase, and cloud
-            infrastructure.
-          </motion.p>
-
-          <motion.p variants={item} className="mt-4 text-sm text-gray-500">
-            10+ years experience in software development
+            I help restaurants, SMEs, and growing businesses automate
+            operations, improve customer service, and increase revenue through
+            custom software, AI chatbots, and business management systems.
           </motion.p>
 
           <motion.div
             variants={item}
-            className="w-20 h-[2px] bg-blue-500/40 mt-8"
-          />
+            className="mt-8 flex flex-wrap gap-3 justify-center text-sm"
+          >
+            <span className="chip">10+ Years Experience</span>
+            <span className="chip">Real Business Systems</span>
+            <span className="chip">Nairobi • Remote</span>
+          </motion.div>
 
           <motion.div
             variants={item}
@@ -159,25 +173,25 @@ export default function Hero() {
           >
             <button
               onClick={() => scrollToSection("projects", "/projects")}
-              className="px-7 py-3 rounded-lg bg-blue-600 text-white font-medium transition hover:scale-105 hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+              className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition hover:scale-105 shadow-lg shadow-blue-600/20"
             >
               Explore My Work
             </button>
 
             <button
               onClick={() => setOpenModal(true)}
-              className="px-7 py-3 rounded-lg border border-blue-400/40 text-blue-300 transition hover:scale-105 hover:bg-blue-500/10"
+              className="px-7 py-3 rounded-xl border border-blue-400/30 text-blue-300 hover:bg-blue-500/10 transition hover:scale-105"
             >
-              Let's Talk
+              Let&apos;s Talk
             </button>
           </motion.div>
 
-          <motion.div
+          <motion.p
             variants={item}
-            className="mt-16 text-xs text-gray-600 font-mono opacity-70"
+            className="mt-14 text-xs text-gray-600 font-mono"
           >
             {"<engineered for scale />"}
-          </motion.div>
+          </motion.p>
         </motion.div>
       </section>
 
@@ -191,9 +205,9 @@ export default function Hero() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 40 }}
+              initial={{ scale: 0.92, opacity: 0, y: 40 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.92, opacity: 0 }}
               transition={{ duration: 0.25 }}
               className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#0b1120] p-7 shadow-2xl"
             >
@@ -257,16 +271,14 @@ export default function Hero() {
                   required
                   value={form.service}
                   onChange={handleChange}
-                  className="input bg-[#0f172a] text-white appearance-none"
+                  className="input"
                 >
-                  <option value="" className="bg-[#0f172a] text-gray-400">
-                    Select Service
-                  </option>
-                  <option className="bg-[#0f172a] text-white">Web Development</option>
-                  <option className="bg-[#0f172a] text-white">Dashboard Systems</option>
-                  <option className="bg-[#0f172a] text-white">Backend APIs</option>
-                  <option className="bg-[#0f172a] text-white">Cloud Deployment</option>
-                  <option className="bg-[#0f172a] text-white">Consultation</option>
+                  <option value="">Select Service</option>
+                  <option>Web Development</option>
+                  <option>Restaurant POS</option>
+                  <option>Business Chatbot</option>
+                  <option>Dashboard Systems</option>
+                  <option>Consultation</option>
                 </select>
 
                 <textarea
@@ -285,11 +297,11 @@ export default function Hero() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2 transition"
+                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="animate-spin" size={18} />
+                      <Loader2 size={18} className="animate-spin" />
                       Sending...
                     </>
                   ) : (
@@ -319,6 +331,14 @@ export default function Hero() {
         .input:focus {
           border-color: #3b82f6;
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .chip {
+          padding: 8px 14px;
+          border-radius: 999px;
+          background: rgba(59, 130, 246, 0.08);
+          border: 1px solid rgba(59, 130, 246, 0.15);
+          color: #93c5fd;
         }
       `}</style>
     </>
