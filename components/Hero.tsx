@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   motion,
   useReducedMotion,
@@ -9,10 +10,6 @@ import {
 } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { X, Send, Loader2 } from "lucide-react";
-
-/* =========================================================
-   Hero.tsx
-========================================================= */
 
 export default function Hero() {
   const router = useRouter();
@@ -34,11 +31,8 @@ export default function Hero() {
   const scrollToSection = (id: string, fallback: string) => {
     const el = document.getElementById(id);
 
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push(fallback);
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else router.push(fallback);
   };
 
   const handleChange = (
@@ -123,75 +117,110 @@ export default function Hero() {
       <section className="min-h-screen flex items-center justify-center px-6 pt-24 relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.10),transparent_65%)]" />
 
+        {/* main hero */}
+
         <motion.div
           variants={container}
           initial="hidden"
           animate="visible"
-          className="max-w-5xl mx-auto text-center"
+          className="max-w-7xl mx-auto w-full"
         >
-          <motion.p
-            variants={item}
-            className="text-blue-400 uppercase tracking-[0.3em] text-xs md:text-sm"
-          >
-            JM TekHub
-          </motion.p>
+          {/* PARENT = TWO CHILDREN */}
+          <div className="flex flex-col gap-8 lg:gap-10">
 
-          <motion.h1
-            variants={item}
-            className="mt-4 text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text leading-tight"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg,#2563eb,#06b6d4,#3b82f6)",
-            }}
-          >
-            Building Scalable Systems
-            <br />
-            for your Business
-          </motion.h1>
+            {/* TOP CHILD = HEADER + IMAGE */}
 
-          <motion.p
-            variants={item}
-            className="mt-7 text-gray-400 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
-          >
-            I help restaurants, SMEs, and growing businesses automate
-            operations, improve customer service, and increase revenue through
-            custom software, AI chatbots, and business management systems.
-          </motion.p>
+            <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-4 xl:gap-6 items-center">
+              {/* HEADER */}
+              <div className="text-center lg:text-left lg:pr-0">
+                <motion.p
+                  variants={item}
+                  className="text-blue-400 uppercase tracking-[0.3em] text-xs md:text-sm"
+                >
+                  JM TekHub
+                </motion.p>
 
-          <motion.div
-            variants={item}
-            className="mt-8 flex flex-wrap gap-3 justify-center text-sm"
-          >
-            <span className="chip">10+ Years Experience</span>
-            <span className="chip">Real Business Systems</span>
-            <span className="chip">Nairobi • Remote</span>
-          </motion.div>
+                <motion.h1
+                  variants={item}
+                  className="mt-3 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.02] text-transparent bg-clip-text"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(90deg,#2563eb,#06b6d4,#3b82f6)",
+                  }}
+                >
+                  Building Scalable Systems
+                  <br className="hidden md:block" />
+                  <span className="block md:inline">for your Business</span>
+                </motion.h1>
+              </div>
 
-          <motion.div
-            variants={item}
-            className="mt-10 flex gap-4 flex-wrap justify-center"
-          >
-            <button
-              onClick={() => scrollToSection("projects", "/projects")}
-              className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition hover:scale-105 shadow-lg shadow-blue-600/20"
-            >
-              Explore My Work
-            </button>
+              {/* IMAGE */}
+              <motion.div
+                variants={item}
+                className="relative flex justify-center lg:justify-start"
+              >
+                <div className="relative w-full max-w-[320px] sm:max-w-[420px] lg:max-w-[500px] xl:max-w-[540px]">
+                  <div className="absolute inset-0 bg-blue-600/20 blur-3xl rounded-full scale-90" />
 
-            <button
-              onClick={() => setOpenModal(true)}
-              className="px-7 py-3 rounded-xl border border-blue-400/30 text-blue-300 hover:bg-blue-500/10 transition hover:scale-105"
-            >
-              Let&apos;s Talk
-            </button>
-          </motion.div>
+                  <Image
+                    src="/images/restaurant3d.png"
+                    alt="JM Tekhub Restaurant POS"
+                    width={900}
+                    height={900}
+                    priority
+                    className="relative z-10 w-full h-auto drop-shadow-2xl hover:scale-[1.02] transition duration-500"
+                  />
+                </div>
+              </motion.div>
+            </div>
 
-          <motion.p
-            variants={item}
-            className="mt-14 text-xs text-gray-600 font-mono"
-          >
-            {"<engineered for scale />"}
-          </motion.p>
+            {/* BOTTOM CHILD = TAGLINE + CTA */}
+            <div className="text-center max-w-4xl mx-auto w-full">
+              <motion.p
+                variants={item}
+                className="text-gray-400 text-base md:text-lg xl:text-xl leading-relaxed"
+              >
+                I help restaurants, SMEs, and growing businesses automate
+                operations, improve customer service, and increase revenue through
+                custom software, AI chatbots, and business management systems.
+              </motion.p>
+
+              <motion.div
+                variants={item}
+                className="mt-8 flex flex-wrap gap-3 justify-center text-sm"
+              >
+                <span className="chip">10+ Years Experience</span>
+                <span className="chip">Real Business Systems</span>
+                <span className="chip">Nairobi • Remote</span>
+              </motion.div>
+
+              <motion.div
+                variants={item}
+                className="mt-8 flex gap-4 flex-wrap justify-center"
+              >
+                <button
+                  onClick={() => scrollToSection("projects", "/projects")}
+                  className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition hover:scale-105 shadow-lg shadow-blue-600/20"
+                >
+                  Explore My Work
+                </button>
+
+                <button
+                  onClick={() => setOpenModal(true)}
+                  className="px-7 py-3 rounded-xl border border-blue-400/30 text-blue-300 hover:bg-blue-500/10 transition hover:scale-105"
+                >
+                  Let's Talk
+                </button>
+              </motion.div>
+
+              <motion.p
+                variants={item}
+                className="mt-10 text-xs text-gray-600 font-mono"
+              >
+                {"<engineered for scale />"}
+              </motion.p>
+            </div>
+          </div>
         </motion.div>
       </section>
 
@@ -301,7 +330,10 @@ export default function Hero() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 size={18} className="animate-spin" />
+                      <Loader2
+                        size={18}
+                        className="animate-spin"
+                      />
                       Sending...
                     </>
                   ) : (
